@@ -1,24 +1,27 @@
 # Globals
 
-# Tuple
+# Tuple for Stocks.
+# game itself is not limited by number of stocks
 STOCKS = ("Industrial", "Grain", "Oil", "Bonds", "Gold", "Tech")
 
-# STOCKS = ("MickeySoft","FarmCo","TMX_Pipe")
+# Classic Game
+#  Yellow, Pink, Green, light orange, white, golden
+# STOCKS = ("Grain","Industrial","Bonds","Oil","Silver","Gold")
 
+# Fun Names
+# STOCKS = ("MickeySoft","FarmCo","PetroPipe", "CoalMine","Peach","Bitcoin")
+
+# These set limits for user input below
 # maximum rolls
 MAX_ROLLS = 20
 # Maximum turns
 MAX_TURNS = 200
 
-
-### Just for the Jupyter Notebook
-##from IPython.display import clear_output
-
-
+# define classes
 class Stock():
     '''
     Stock object - attributes: name, price, split, offmkt
-                    methods: up, down, div
+                    methods: up, down, div (ret boolean)
     '''
 
     def __init__(self, name, price=100):
@@ -68,7 +71,6 @@ class Stock():
 
 
 import random
-
 
 class Die():
     '''

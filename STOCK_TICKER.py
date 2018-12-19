@@ -43,7 +43,8 @@ class Stock():
             msg = (f"{self.name} SPLITS! Share holdings DOUBLED! \n")
             # double all players holding of the stock
             for each in player:
-                each.shares[ref] = 2 * each.shares[ref];
+                if each.shares[ref] > 0:
+                    each.shares[ref] = 2 * each.shares[ref];
             self.offmkt += 1
             # Set it back to par
             self.price = 100
@@ -60,7 +61,8 @@ class Stock():
             # loop through all players and set ref to zero
             for each in player:
                 each.shares[ref] = 0
-            self.offmkt += 1
+            # Keeping track of splits for end game analysis
+            self.split += 1
             # Back to PAR
             self.price = 100
         return msg
@@ -199,7 +201,9 @@ def get_number_of_players():
 
 def player_setup(number):
     '''
-    Get names & return a list of Player objects
+    Get unique names & to create players
+    and
+    return a list of Player objects
     '''
     player = []
     prev_names = []
@@ -233,7 +237,7 @@ def choose_stock(trade):
     while not choice in range(len(STOCKS)):
         try:
             stock_name = ''
-            print(f'\nChoose one of {", ".join(STOCKS)}')
+            print(f'\nChoose one of: {", ".join(STOCKS)}')
             while stock_name == '':
                 # Input Stock to trade
                 stock_name = str(input(f"{help_string}Which stock would you like to {trade}?: ")).capitalize()
@@ -242,10 +246,11 @@ def choose_stock(trade):
 
             # Test - show the stock matched
             # This is my test error if player picked something that can't be matched
+            # if this isn't a number, nothing matched in the list
             int(index[0])
 
         except:
-            print(f"I can't figure out what {stock_name} is. Please Try Again")
+            print(f'I can\'t figure out what "{stock_name}" is. Please Try Again')
             help_string = "First letter or two please\n"
         else:
             # More than one match
@@ -254,7 +259,7 @@ def choose_stock(trade):
                 for each in index:
                     matches.append(STOCKS[each])
                 match_string = ", ".join(matches)
-                print(f"That matches more than one stock: {match_string}")
+                print(f'Your choice matches more than one: {match_string}')
                 help_string = "\nCan you give me enough letters to figure it out please?\n"
             else:
                 choice = index[0];
@@ -265,7 +270,7 @@ def choose_stock(trade):
 def trade(current_player, market, initial=False):
     '''
     trade() gives each player a chance to buy or sell
-    if initial is True, continues until player has made at least one purchase i.e. cash < 5000
+    if initial is set to True, continues until player has made at LEAST one purchase
     '''
     print(display_market(market))
     print(current_player)
@@ -278,7 +283,7 @@ def trade(current_player, market, initial=False):
     while 'q' not in action:
         # if initial
         if initial:
-            print(f"\n\nLet's get started!\n\n{current_player.name} *must* buy at least one stock to begin\n")
+            print(f"\n\tLet's get started!\n\t{current_player.name} *must* buy at least one stock to begin\n")
 
             # it's buy
             turn = 'first'
@@ -421,7 +426,7 @@ print("Welcome to Stock Ticker Py\n\tThe game that makes fortunes and fun(tm)\n\
 print("\nThe object of the game, is to buy and sell stocks, and by so doing\n" +
       "accumulate a greater amount of money than the other players\nat the end of the game.")
 print("The winner is decided by setting a time limit at the start of the\n" +
-      "game, and is the person having the greastest amount of money,\n" +
+      "game, and is the person having the greatest amount of money,\n" +
       "after selling his stocks back to the Broker at their present market\n" +
       "value, plus their monies on hand\n")
 
@@ -443,14 +448,21 @@ for each in player:
 # Setup roll and turns
 rolls, turns = turn_setup()
 
-for x in range(turns):
-    for y in range(rolls):
-        dice_roll(dice_set)
-        msg = ''
-        for die in dice_set:
-            msg += (f'{die.sides[die.showing]} ')
-        print(msg + "\n")
 
+for current_turn in range(turns):
+    for current_dice_roll in range(rolls):
+        # Roll the dice
+        dice_roll(dice_set)
+        # Create a current roll message based on die sides showing
+        roll_msg = ''
+        for die in dice_set:
+            roll_msg += (f'{die.sides[die.showing]} ')
+        # Gold UP 20
+        # Bonds DIV 5
+        # Industrial DOWN 10
+        print(roll_msg + "\n")
+
+        # What action needs to happen based on dice roll?
         if (dice_set[1].sides[dice_set[1].showing]) == 'UP':
             #
             result = market[dice_set[0].showing].up(dice_set[2].sides[die.showing], dice_set[0].showing, player)
@@ -459,9 +471,9 @@ for x in range(turns):
             #
             result = market[dice_set[0].showing].down(dice_set[2].sides[die.showing], dice_set[0].showing, player)
             print(result)
-        else:
+        elif (dice_set[1].sides[dice_set[1].showing]) == 'D':
             # It's a Dividend
-            # Is the stock is paying a dividend?
+            # Is the stock is paying a dividend? True/False
             if market[dice_set[0].showing].div():
                 # Turn the 5,10 or 20 into 0.05, 0.10 or 0.20
                 div_percent = dice_set[2].sides[die.showing] / 100
@@ -472,9 +484,8 @@ for x in range(turns):
                         check_player.cash += div_percent * check_player.shares[dice_set[0].showing]
             else:
                 print(f"{market[dice_set[0].showing].name} is NOT paying a dividend at ${market[dice_set[0].showing].price / 100:1.2f}")
-
+    # Each player gets a chance to trade at the end of the round
     for each in player:
-        print(display_market(market))
         trade(each, market)
 
 # End of the game

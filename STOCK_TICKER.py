@@ -471,7 +471,7 @@ for current_turn in range(turns):
             #
             result = market[dice_set[0].showing].down(dice_set[2].sides[die.showing], dice_set[0].showing, player)
             print(result)
-        elif (dice_set[1].sides[dice_set[1].showing]) == 'D':
+        elif (dice_set[1].sides[dice_set[1].showing]) == 'DIV':
             # It's a Dividend
             # Is the stock is paying a dividend? True/False
             if market[dice_set[0].showing].div():

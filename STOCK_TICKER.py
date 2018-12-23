@@ -9,7 +9,7 @@ STOCKS = ("Industrial", "Grain", "Oil", "Bonds", "Gold", "Tech")
 # STOCKS = ("Grain","Industrial","Bonds","Oil","Silver","Gold")
 
 # Fun Names
-# STOCKS = ("MickeySoft","FarmCo","PetroPipe", "CoalMine","Peach","Bitcoin")
+# STOCKS = ("WidgetMFG","FarmCo","PetroPipe", "CoalMine","ApricotTech","Bitcoin")
 
 # These set limits for user input below
 # maximum rolls
@@ -98,9 +98,9 @@ class Die():
 
 
 class Player():
-    '''
+    """
     Player class and buy/sell/bankruptcy methods
-    '''
+    """
 
     def __init__(self, name, cash=5000):
         self.name = name
@@ -111,10 +111,10 @@ class Player():
     def __str__(self):
         output = (f'Player: {self.name}\n')
         output += '\tCurrent Portfolio:\n'
-        output += (f'\tCash:\t\t${self.cash:1.2f}\n')
+        output += (f'\tCash:\t\t\t${self.cash:1.2f}\n')
         for i in range(0, len(self.shares)):
             if self.shares[i] != 0:
-                output += (f'\t{STOCKS[i]}:\t\t{self.shares[i]}\n')
+                output += (f'\t{STOCKS[i]}:\t\t{self.shares[i]}\t${market[i].price / 100 * self.shares[i]:1.2f}\n')
         output += (f'Total Value:\t\t${self.value(market):1.2f}\n')
         return output
 
@@ -156,20 +156,20 @@ def display_market(market):
 
 
 def setup_market(stocks):
-    '''
+    """
     Create & return a list of Stock objects
     based on the list of Stocks passed in
-    '''
-    market = []
+    """
+    stock_market = []
     for each in stocks:
-        market.append(Stock(each, 100))
-    return market
+        stock_market.append(Stock(each, 100))
+    return stock_market
 
 
 def setup_dice():
-    '''
+    """
     Create & return a list of die objects that will be the dice
-    '''
+    """
     dice = []
     dice.append(Die("Stock", STOCKS))
     dice.append(Die("Action", ("UP", "DOWN", "DIV", "UP", "DOWN", "DIV")))
@@ -178,16 +178,18 @@ def setup_dice():
 
 
 def dice_roll(dice):
-    '''
+    """
     Roll each die in a list of Die objects
-    '''
+    """
     for die in dice:
         die.roll()
     return
 
 
 def get_number_of_players():
-    # How many players?
+    """
+    Loops until a valid number of players is selected
+    """
     number = 0
     while number not in range(1, 9):
         try:
@@ -200,12 +202,12 @@ def get_number_of_players():
 
 
 def player_setup(number):
-    '''
+    """
     Get unique names & to create players
     and
     return a list of Player objects
-    '''
-    player = []
+    """
+    player_list = []
     prev_names = []
     for i in range(1, number + 1):
         input_loop = True
@@ -221,16 +223,16 @@ def player_setup(number):
                 else:
                     # We have a good name
                     prev_names.append(name)
-                    player.append(Player(name))
+                    player_list.append(Player(name))
                     input_loop = False
-    return player
+    return player_list
 
 
-def choose_stock(trade):
-    '''
-    Return a single valid stock index to Stock tuple
+def choose_stock(trade_type):
+    """
+    player selects a single valid stock index to Stock tuple
     trade is a string of buy or sell for the prompt
-    '''
+    """
     help_string = ''
     # Set choice to be more than the possible indexes for STOCKS tuple
     choice = len(STOCKS)
@@ -240,7 +242,7 @@ def choose_stock(trade):
             print(f'\nChoose one of: {", ".join(STOCKS)}')
             while stock_name == '':
                 # Input Stock to trade
-                stock_name = str(input(f"{help_string}Which stock would you like to {trade}?: ")).capitalize()
+                stock_name = str(input(f"{help_string}Which stock would you like to {trade_type}?: ")).capitalize()
             # check if we can match the entered string to stocks in the tuple
             index = [x for x, s in enumerate(list(STOCKS)) if stock_name in s]
 
@@ -268,10 +270,10 @@ def choose_stock(trade):
 
 
 def trade(current_player, market, initial=False):
-    '''
+    """
     trade() gives each player a chance to buy or sell
-    if initial is set to True, continues until player has made at LEAST one purchase
-    '''
+    if initial is set to True, loops until player has made at LEAST one purchase
+    """
     print(display_market(market))
     print(current_player)
 

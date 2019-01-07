@@ -284,6 +284,9 @@ def trade(current_player, market, initial=False):
     turn = 'subsequent'
     buy = False
 
+    max_stock = {}
+    specific_prompt = {}
+
     while 'q' not in action:
         # if initial
         if initial:
@@ -325,8 +328,18 @@ def trade(current_player, market, initial=False):
 
         # which stock
         stock_ref = choose_stock(action)
-        # how much
-        prompt_str = (f'How much {STOCKS[stock_ref]} (multiple of 500 shares) would you like to {action}?: ')
+        # how much .shares
+        max_stock['buy'] = int(current_player.cash / (market[stock_ref].price / 100)/500)*500
+        max_stock['sell'] = current_player.shares[stock_ref]
+        # You can afford {max_stock['buy']} shares of {STOCKS[stock_ref]} worth ${(market[stock_ref].price / 100) * amount:.2} with your cash of {current_player.cash}
+        specific_prompt['buy'] = (f"You can afford {max_stock['buy']} shares of {STOCKS[stock_ref]} "
+                      f"worth ${(market[stock_ref].price / 100) * max_stock['buy']:.2f} "
+                      f"with your cash of ${current_player.cash:.2f}\n")
+        # You have {current_player,shares[stock_ref]} shares of {STOCKS[stock_ref]} worth {(market[stock_ref].price / 100) * amount}
+        specific_prompt['sell'] = (f"You have {current_player.shares[stock_ref]} shares of {STOCKS[stock_ref]} "
+                       f"worth ${(market[stock_ref].price / 100) * current_player.shares[stock_ref]:.2f}\n")
+        prompt_str = specific_prompt[action] + (f'How much {STOCKS[stock_ref]} (0 to {max_stock[action]} '
+                                                f'in 500 share increments) do you wish to {action}?: ')
         amount = -1
         # valid (multiple of 500?)
         while amount % 500 != 0:
@@ -344,25 +357,29 @@ def trade(current_player, market, initial=False):
                         if current_player.cash >= (market[stock_ref].price / 100 * amount):
                             # Player can afford the purchase
                             current_player.buy(stock_ref, amount)
-                            print(f'\t{current_player.name} bought {amount} shares of {STOCKS[stock_ref]}')
+                            print(f'{current_player.name} bought {amount} shares of {STOCKS[stock_ref]} for '
+                                  f'${amount * market[stock_ref].price / 100:.2f}')
                             print(current_player)
                             initial = False
                             buy = True
                             choice = "x"
                         else:
-                            print(f"Your cash of ${current_player.cash:1.2f} isn't enough to buy ${amount * market[stock_ref].price / 100:1.2f} worth of {STOCKS[stock_ref]}")
+                            print(f"Your cash of ${current_player.cash:1.2f} isn't enough to buy "
+                                  f"${amount * (market[stock_ref].price / 100):1.2f} worth of {STOCKS[stock_ref]}")
                             amount = -1
                     elif action == 'sell':
                         # Does the player have enough shares to sell?
                         if current_player.shares[stock_ref] >= amount:
                             # Player has enough to cover the sell
                             current_player.sell(stock_ref, amount)
-                            print(f'\t{current_player.name} sold {amount} shares of {STOCKS[stock_ref]}')
+                            print(f'{current_player.name} sold {amount} shares of {STOCKS[stock_ref]} '
+                                  f'for ${amount * (market[stock_ref].price / 100):1.2f}')
                             print(current_player)
                             initial = False
                             choice = "x"
                         else:
-                            print(f"Your shares of {current_player.shares[stock_ref]} isn't enough to sell {amount} worth of {STOCKS[stock_ref]}")
+                            print(f"Your shares of {current_player.shares[stock_ref]} isn't enough to sell {amount} "
+                                  f"of {STOCKS[stock_ref]}")
                             amount = -1
 
                 else:
@@ -487,10 +504,12 @@ for current_turn in range(turns):
                         # add it to player.cash
                         check_player.cash += div_percent * check_player.shares[dice_set[0].showing]
             else:
-                print(f"{market[dice_set[0].showing].name} is NOT paying a dividend at ${market[dice_set[0].showing].price / 100:1.2f}")
-    # Each player gets a chance to trade at the end of the round
-    for each in player:
-        trade(each, market)
+                print(f"{market[dice_set[0].showing].name} is NOT paying a dividend at "
+                      f"${market[dice_set[0].showing].price / 100:1.2f}")
+    if current_turn < (turns - 1) :
+        # If not the very last turn, each player gets a chance to trade at the end of the dice rolling
+        for each in player:
+            trade(each, market)
 
 # End of the game
 winners = end_of_game(market, player)
@@ -503,10 +522,10 @@ if len(winners) > 1:
 elif len(player) == 1:
     # Solitare
     print(f"The winner of the game is {player[winners[0]].name}")
-    print(f"with \t\t${player[winners[0]].cash:1.2f}")
-    print(f"who is also the loser")
-    print(f"who was the only player")
-    print(f"Let me find you a nice participant ribbon :-P")
+    print(f"with a final portfolio value of ${player[winners[0]].cash:1.2f}"
+          f"- who is also the loser,"
+          f"- who was the only player"
+          f"Let me find you a nice participant ribbon!")
 
 else:
     print(f"The winner of the game is {player[winners[0]].name}")

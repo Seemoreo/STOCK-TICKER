@@ -111,17 +111,19 @@ class Player():
     def __str__(self):
         output = (f'Player: {self.name}\n')
         output += '\tCurrent Portfolio:\n'
-        output += (f'\tCash:\t\t\t${self.cash:1.2f}\n')
+        output += (f'\tCash:{str(f"${self.cash:.2f}").rjust(30)}\n')
         for i in range(0, len(self.shares)):
             if self.shares[i] != 0:
-                output += (f'\t{STOCKS[i]}:\t\t{self.shares[i]}\t${market[i].price / 100 * self.shares[i]:1.2f}\n')
-        output += (f'Total Value:\t\t${self.value(market):1.2f}\n')
+                output += (f'\t{(STOCKS[i]+":").ljust(12)}{str(self.shares[i]).rjust(12)}')
+                output += (f'{str(f"${market[i].price / 100 * self.shares[i]:.2f}").rjust(11)}\n')
+        output += (f'Total Value: {str(f"${self.value(market):.2f}").rjust(26)}\n')
         return output
 
     def value(self, market):
         value = self.cash
         for i in range(0, len(self.shares)):
             value += self.shares[i] * market[i].price / 100
+        # Add value to a history list
         return value
 
     def buy(self, stock_ref, amount):

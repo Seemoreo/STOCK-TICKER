@@ -123,7 +123,6 @@ class Player():
         value = self.cash
         for i in range(0, len(self.shares)):
             value += self.shares[i] * market[i].price / 100
-        # Add value to a history list
         return value
 
     def buy(self, stock_ref, amount):
@@ -331,11 +330,13 @@ def trade(current_player, market, initial=False):
         # how much .shares
         max_stock['buy'] = int(current_player.cash / (market[stock_ref].price / 100)/500)*500
         max_stock['sell'] = current_player.shares[stock_ref]
-        # You can afford {max_stock['buy']} shares of {STOCKS[stock_ref]} worth ${(market[stock_ref].price / 100) * amount:.2} with your cash of {current_player.cash}
+        # You can afford {max_stock['buy']} shares of {STOCKS[stock_ref]} worth ${(market[stock_ref].price / 100) *
+        # amount:.2} with your cash of {current_player.cash}
         specific_prompt['buy'] = (f"You can afford {max_stock['buy']} shares of {STOCKS[stock_ref]} "
                       f"worth ${(market[stock_ref].price / 100) * max_stock['buy']:.2f} "
                       f"with your cash of ${current_player.cash:.2f}\n")
-        # You have {current_player,shares[stock_ref]} shares of {STOCKS[stock_ref]} worth {(market[stock_ref].price / 100) * amount}
+        # You have {current_player,shares[stock_ref]} shares of {STOCKS[stock_ref]} worth
+        # {(market[stock_ref].price / 100) * amount}
         specific_prompt['sell'] = (f"You have {current_player.shares[stock_ref]} shares of {STOCKS[stock_ref]} "
                        f"worth ${(market[stock_ref].price / 100) * current_player.shares[stock_ref]:.2f}\n")
         prompt_str = specific_prompt[action] + (f'How much {STOCKS[stock_ref]} (0 to {max_stock[action]} '
@@ -396,20 +397,16 @@ def end_of_game(market, player):
                     Returns a list of all players that had the most cash at game end
     '''
     print(display_market(market))
-    print("End of the game!\nTime to CA$H Out!")
+    print("End of the game!\nWho had the biggest portfolio?")
     # loop through players
     for current_player in player:
-        for ref in range(len(market)):
-            if current_player.shares[ref] > 0:
-                current_player.sell(ref, current_player.shares[ref])
-        print("Liquidated!")
-        print(current_player)
+           print(current_player)
     # who had the most money?
     winner = [0]
     for index in range(len(player)):
-        if player[index].cash > player[winner[0]].cash:
+        if player[index].value(market) > player[winner[0]].value(market):
             winner = [index]
-        elif player[index].cash == player[winner[-1]].cash and player[index].name != player[winner[-1]].name:
+        elif player[index].value(market) == player[winner[-1]].value(market) and player[index].value(market) != player[winner[-1]].value(market):
             winner.append(index)
     return winner
 
@@ -522,9 +519,9 @@ if len(winners) > 1:
 elif len(player) == 1:
     # Solitare
     print(f"The winner of the game is {player[winners[0]].name}")
-    print(f"with a final portfolio value of ${player[winners[0]].cash:1.2f}"
-          f"- who is also the loser,"
-          f"- who was the only player"
+    print(f"with a final portfolio value of ${player[winners[0]].value(market):1.2f}\n"
+          f"- who is also the loser,\n"
+          f"- who was the only player\n"
           f"Let me find you a nice participant ribbon!")
 
 else:
